@@ -1,0 +1,6 @@
+[submodule "libict"]
+	path = libict
+	url = https://github.com/ict-project/libict.git
+[submodule "libsmpp"]
+	path = libsmpp
+	url = https://github.com/ict-project/libsmpp.git
