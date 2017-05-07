@@ -45,7 +45,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace smpp { namespace connection {
 //===========================================
 class Iface : public std::enable_shared_from_this<Iface>, public smpp::reg::Base {
-protected:
+public:
   typedef std::enable_shared_from_this<Iface> enable_shared_t;
   //! Opis połączenia.
   std::string sDesc;
