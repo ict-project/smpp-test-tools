@@ -37,6 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _OBJECT_REGISTER_HEADER
 //============================================
 #include <map>
+#include <random>
 //============================================
 namespace smpp { namespace reg {
 //===========================================
