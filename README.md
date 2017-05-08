@@ -1,4 +1,4 @@
-# smpp-test-tool
+# smpp-test-tool [![Build Status](https://travis-ci.org/ict-project/smpp-test-tools.svg?branch=master)](https://travis-ci.org/ict-project/smpp-test-tools)
 SMPP test tools kit.
 
 ## Available tools
