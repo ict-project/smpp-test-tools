@@ -38,9 +38,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //============================================
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <functional>
 #include "register.hpp"
 //============================================
 namespace smpp { namespace resolver {
+//===========================================
+typedef std::function<void(const boost::system::error_code&)> error_handler_t;
 //===========================================
 class Tcp : public std::enable_shared_from_this<Tcp>, public smpp::reg::Base{
 private:
@@ -52,6 +55,7 @@ private:
   boost::asio::deadline_timer d;
 public:
   Tcp(const std::string & host,const std::string & port);
+  Tcp(const std::string & host,const std::string & port,error_handler_t onError);
   void init();
   virtual ~Tcp();
 private:
@@ -63,11 +67,14 @@ protected:
   boost::asio::ip::tcp::resolver::iterator ei;
   //! Funkcja wykonywana, gdy zapytanie DNS zakończy się sukcesem (funkcja obowiązkowo do nadpisania).
   virtual void afterResolve()=0;
+  //! Zewnętrzna obsługa błędów.
+  error_handler_t e;
 };
 //============================================
 class Stream : public std::enable_shared_from_this<Stream>{
 public:
   Stream(const std::string & path);
+  Stream(const std::string & path,error_handler_t onError);
   void init();
   virtual ~Stream();
 private:
@@ -79,6 +86,8 @@ protected:
   boost::asio::local::stream_protocol::endpoint ep;
   //! Funkcja wykonywana, gdy zapytanie zakończy się  sukcesem (funkcja obowiązkowo do nadpisania).
   virtual void afterResolve()=0;
+  //! Zewnętrzna obsługa błędów.
+  error_handler_t e;
 };
 //============================================
 }}

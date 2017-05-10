@@ -44,6 +44,10 @@ Tcp::Tcp(const std::string & host,const std::string & port)
   :r(smpp::main::ioService()),q(host,port),d(smpp::main::ioService()){
   LOGGER_INFO<<__LOGGER__<<"smpp::resolver::Tcp has been created ..."<<std::endl;
 }
+Tcp::Tcp(const std::string & host,const std::string & port,error_handler_t onError)
+  :r(smpp::main::ioService()),q(host,port),d(smpp::main::ioService()),e(onError){
+  LOGGER_INFO<<__LOGGER__<<"smpp::resolver::Tcp has been created ..."<<std::endl;
+}
 void Tcp::init(){
   doResolve();
 }
@@ -53,21 +57,26 @@ Tcp::~Tcp(){
 void Tcp::doResolve(){
   auto self(enable_shared_t::shared_from_this());
   LOGGER_DEBUG<<__LOGGER__<<"Trying to resolve "<<q.host_name()<<":"<<q.service_name()<<" ..."<<std::endl;
+  d.expires_from_now(boost::posix_time::seconds(60));
   d.async_wait(
     [this,self](const boost::system::error_code& ec){
       LOGGER_LAYER;
-      if (!ec){
+      if (ec){
+        if (e) e(ec);
+      } else {
         LOGGER_INFO<<__LOGGER__<<"Resolving timer "<<q.host_name()<<":"<<q.service_name()<<" has expired ..."<<std::endl;
         r.cancel();
+        if (e) e(ec);
       }
     }
   );
-  d.expires_from_now(boost::posix_time::seconds(60));
   r.async_resolve(
     q,
     [this,self](const boost::system::error_code& ec,boost::asio::ip::tcp::resolver::iterator endpoint_iterator){
       LOGGER_LAYER;
-      if (!ec){
+      if (ec){
+        if (e) e(ec);
+      } else {
         LOGGER_DEBUG<<__LOGGER__<<"Resolving "<<q.host_name()<<":"<<q.service_name()<<" has succeeded ..."<<std::endl;
         d.cancel();
         ei=endpoint_iterator;
@@ -78,6 +87,9 @@ void Tcp::doResolve(){
 }
 //============================================
 Stream::Stream(const std::string & path):ep(path){
+  LOGGER_INFO<<__LOGGER__<<"smpp::resolver::Stream has been created ..."<<std::endl;
+}
+Stream::Stream(const std::string & path,error_handler_t onError):ep(path),e(onError){
   LOGGER_INFO<<__LOGGER__<<"smpp::resolver::Stream has been created ..."<<std::endl;
 }
 Stream::~Stream(){

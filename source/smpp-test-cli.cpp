@@ -51,7 +51,7 @@ OPTIONS_CONFIG(cli0,0){
   if (config) {
   } else {
     parser.errors<<"Usage: "<<std::endl;
-    parser.errors<<" smpp-test-client --ctr-id=smpp-test-client-0"<<std::endl;
+    parser.errors<<" smpp-test-cli --ctr-id=smpp-test-client-0"<<std::endl;
     parser.errors<<" smpp-test-cli -h"<<std::endl;
     parser.errors<<std::endl;
     parser.errors<<"Options: "<<std::endl;
@@ -67,7 +67,13 @@ class App: public smpp::main::Application {
 public:
   void doStart(){
     if (!params::path.size()) throw std::invalid_argument("Instance ID of smpp-test-server or smpp-test-client must be provided!");
-    smpp::client::factory("/tmp/"+params::path,smpp::cli::factory);
+    smpp::client::factory(
+      "/tmp/"+params::path,
+      smpp::cli::factory,
+      [](const boost::system::error_code&ec){
+        smpp::main::ioService().stop();
+      }
+    );
   }
   void doClean(){
     REGISTER_CLIENT_STREAM.destroy();

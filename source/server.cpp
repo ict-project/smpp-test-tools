@@ -48,6 +48,11 @@ Tcp::Tcp(const std::string & host,const std::string & port,smpp::connection::fac
   LOGGER_INFO<<__LOGGER__<<"smpp::server::Tcp has been created ..."<<std::endl;
   REGISTER_SERVER_TCP.add(this,"smpp::server::Tcp "+host+":"+port);
 }
+Tcp::Tcp(const std::string & host,const std::string & port,smpp::connection::factory_ip_t factory,resolver::error_handler_t onError)
+  :resolver::Tcp(host,port,onError),s(smpp::main::ioService()),a(smpp::main::ioService()),f(factory){
+  LOGGER_INFO<<__LOGGER__<<"smpp::server::Tcp has been created ..."<<std::endl;
+  REGISTER_SERVER_TCP.add(this,"smpp::server::Tcp "+host+":"+port);
+}
 Tcp::~Tcp(){
   LOGGER_INFO<<__LOGGER__<<"smpp::server::Tcp has been destroyed ..."<<std::endl;
   REGISTER_SERVER_TCP.del(this);
@@ -95,8 +100,10 @@ void Tcp::doBind(){
       }
     }
   } else {
+    boost::system::error_code ec;
     LOGGER_NOTICE<<__LOGGER__<<"Bind has finally failed ..."<<std::endl;
     doStop();
+    if (e) e(ec);
   }
 }
 void Tcp::doAccept(){
@@ -128,9 +135,18 @@ void factory(const std::string & host,const std::string & port,smpp::connection:
   auto ptr=std::make_shared<Tcp>(host,port,factory);
   if (ptr) ptr->init();
 }
+void factory(const std::string & host,const std::string & port,smpp::connection::factory_ip_t factory,resolver::error_handler_t onError){
+  auto ptr=std::make_shared<Tcp>(host,port,factory,onError);
+  if (ptr) ptr->init();
+}
 //============================================
 Stream::Stream(const std::string & path,smpp::connection::factory_local_t factory)
   :resolver::Stream(path),s(smpp::main::ioService()),a(smpp::main::ioService()),f(factory){
+  LOGGER_INFO<<__LOGGER__<<"smpp::server::Stream has been created ..."<<std::endl;
+  REGISTER_SERVER_STREAM.add(this,"smpp::server::Stream "+path);
+}
+Stream::Stream(const std::string & path,smpp::connection::factory_local_t factory,resolver::error_handler_t onError)
+  :resolver::Stream(path,onError),s(smpp::main::ioService()),a(smpp::main::ioService()),f(factory){
   LOGGER_INFO<<__LOGGER__<<"smpp::server::Stream has been created ..."<<std::endl;
   REGISTER_SERVER_STREAM.add(this,"smpp::server::Stream "+path);
 }
@@ -160,16 +176,19 @@ void Stream::doBind(){
     if (ec) {
       LOGGER_INFO<<__LOGGER__<<"Bind to "<<ep<<" has finally failed ..."<<std::endl;
       doBind();
+      if (e) e(ec);
     } else {
       a.bind(ep,ec);
       if (ec) {
         LOGGER_INFO<<__LOGGER__<<"Bind to "<<ep<<" has finally failed ..."<<std::endl;
         doBind();
+        if (e) e(ec);
       } else {
         a.listen(boost::asio::socket_base::max_connections,ec);
         if (ec) {
           LOGGER_INFO<<__LOGGER__<<"Bind to "<<ep<<" has finally failed ..."<<std::endl;
           doBind();
+          if (e) e(ec);
         } else {
           LOGGER_DEBUG<<__LOGGER__<<"Bind to "<<ep<<" has succeeded ..."<<std::endl;
           doAccept();
@@ -207,6 +226,13 @@ void factory(const std::string & path,smpp::connection::factory_local_t factory)
   try {::unlink(path.c_str());} catch (...){}
   {
     auto ptr=std::make_shared<Stream>(path,factory);
+    if (ptr) ptr->init();
+  }
+}
+void factory(const std::string & path,smpp::connection::factory_local_t factory,resolver::error_handler_t onError){
+  try {::unlink(path.c_str());} catch (...){}
+  {
+    auto ptr=std::make_shared<Stream>(path,factory,onError);
     if (ptr) ptr->init();
   }
 }

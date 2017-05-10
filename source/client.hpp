@@ -55,6 +55,7 @@ private:
   boost::asio::deadline_timer d;
 public:
   Tcp(const std::string & host,const std::string & port,smpp::connection::factory_ip_t factory);
+  Tcp(const std::string & host,const std::string & port,smpp::connection::factory_ip_t factory,resolver::error_handler_t onError);
   virtual ~Tcp();
   //! Zamyka połączenie.
   void doStop();
@@ -66,6 +67,7 @@ private:
   void doConnect();
 };
 void factory(const std::string & host,const std::string & port,smpp::connection::factory_ip_t factory);
+void factory(const std::string & host,const std::string & port,smpp::connection::factory_ip_t factory,resolver::error_handler_t onError);
 //============================================
 class Stream : public resolver::Stream {
 private:
@@ -77,6 +79,7 @@ private:
   smpp::connection::factory_local_t f;
 public:
   Stream(const std::string & path,smpp::connection::factory_local_t factory);
+  Stream(const std::string & path,smpp::connection::factory_local_t factory,resolver::error_handler_t onError);
   virtual ~Stream();
   //! Zamyka połączenie.
   void doStop();
@@ -88,6 +91,7 @@ private:
   void doConnect();
 };
 void factory(const std::string & path,smpp::connection::factory_local_t factory);
+void factory(const std::string & path,smpp::connection::factory_local_t factory,resolver::error_handler_t onError);
 //============================================
 }}
 //===========================================

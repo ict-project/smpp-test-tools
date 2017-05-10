@@ -37,6 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "user-app.hpp"
 #include "../libict/source/logger.hpp"
 #include "../libict/source/options.hpp"
+#include "main-function.hpp"
 //============================================
 #define __WIDEN2(x) L ## x
 #define __WIDEN(x) __WIDEN2(x)
@@ -106,6 +107,7 @@ Connection::Connection()
 }
 Connection::~Connection(){
   REGISTER_CLI_APP.del(this);
+  smpp::main::ioService().stop();
 }
 void Connection::readPdu(anthill::smpp::SMPPGenericNack & p){
   readBegin(p);
