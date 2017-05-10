@@ -43,6 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //============================================
 namespace smpp { namespace main {
 //===========================================
+std::string syslogInfoString;
 static std::size_t print_help=0;
 OPTIONS_CONFIG(main1,1){
   if (config) {
@@ -138,7 +139,13 @@ int mainFunction(int argc,const char* argv[],Application & app){
     return(-100);
   }
   {// Ustawianie loggera.
-    if (print_log) LOGGER_SET(std::cerr);
+    if (print_log) {
+      if (daemon_mode){
+        LOGGER_SET(syslogInfoString);
+      } else{
+        LOGGER_SET(std::cerr);
+      }
+    }
     LOGGER_DEFAULT(
       (print_log?(ict::logger::all&logger_direct):(ict::logger::none)),
       (print_log?(ict::logger::all&logger_buffered):(ict::logger::none)),

@@ -53,6 +53,7 @@ public:
 int mainFunction(int argc,const char* argv[],Application & app);
 boost::asio::io_service & ioService();
 void memoryDump(std::ostream & out,void * ptr,std::size_t size);
+extern std::string syslogInfoString;
 //============================================
 }}
 //===========================================

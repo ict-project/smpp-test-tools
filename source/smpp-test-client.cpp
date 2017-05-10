@@ -116,6 +116,7 @@ public:
 //============================================
 int main(int argc, const char* argv[]){
   App app;
+  smpp::main::syslogInfoString="smpp-test-client";
   return(smpp::main::mainFunction(argc,argv,app));
 }
 //====================================================================
