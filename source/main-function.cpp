@@ -108,6 +108,14 @@ OPTIONS_CONFIG(main6,204){
     parser.errors<<" "<<"Available logger severity values: 'critical', 'error', 'warning', 'notice', 'info', 'debug', 'errors', 'warnings', 'notices', 'infos', 'all', 'nocritical', 'noerrors', 'nowarnings', 'nonotices', 'none', 'nodebug'."<<std::endl;
   }
 }
+static std::size_t daemon_mode=0;
+OPTIONS_CONFIG(main7,205){
+  if (config) {
+    parser.registerOptNoValue(L'd',L"daemon",daemon_mode);
+  } else {
+    parser.errors<<" "<<parser.getOptionDesc(L'd')<<" - run as daemon."<<std::endl;
+  }
+}
 //===========================================
 boost::asio::io_service & ioService(){
   static boost::asio::io_service io_service;
@@ -139,23 +147,63 @@ int mainFunction(int argc,const char* argv[],Application & app){
     LOGGER_BASEDIR;
   }
   try {// Konfigurowanie asychronicznej aplikacji
-    LOGGER_LAYER;
     boost::asio::signal_set signals(ioService(),SIGINT,SIGTERM);
     //signals.async_wait(boost::bind(&boost::asio::io_service::stop,&(ioService())));
     signals.async_wait([&app](const boost::system::error_code& ec,int signal_number){
       ioService().stop();// Zatrzymanie aplikacji.
     });
-    LOGGER_DEBUG<<__LOGGER__<<"Application is about to start ..."<<std::endl;
-    app.doStart();
-    LOGGER_INFO<<__LOGGER__<<"IO service is about to start ..."<<std::endl;
-    ioService().run();// Uruchomienie aplikacji.
-    LOGGER_INFO<<__LOGGER__<<"Application is about to stop ..."<<std::endl;
-    app.doClean();
-    ioService().reset();//Zamykanie.
-    ioService().poll();
-    LOGGER_INFO<<__LOGGER__<<"IO service has stopped ..."<<std::endl;
-    app.doStop();
-    LOGGER_DEBUG<<__LOGGER__<<"Application has stopped ..."<<std::endl;
+    if (daemon_mode){
+      const int write_flags=O_WRONLY|O_CREAT|O_APPEND;
+      const mode_t write_mode=S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH;
+      ioService().notify_fork(boost::asio::io_service::fork_prepare);
+      // First fork
+      if (pid_t pid=fork()) {
+        if (pid>0) {//Parent
+          exit(0);
+        } else {//Error
+          return(-201);
+        }
+      }
+      setsid();
+      out=chdir("/");
+      umask(0);
+      // Second fork.
+      if (pid_t pid = fork()) {
+        if (pid>0){//Parent
+          exit(0);
+        } else {//Error
+          return(-202);
+        }
+      }
+      // Close the standard streams.
+      close(0);
+      close(1);
+      close(2);
+      if (open("/dev/null",O_RDONLY)<0){//STDIN from /dev/null
+        return(-203);//Error
+      }
+      if (open("/dev/null",write_flags,write_mode)<0) {//STDOUT to /dev/null
+        return(-204);//Error
+      }
+      if (dup(1)<0) {//STDERR to /dev/null
+        return(-205);//Error
+      }
+      ioService().notify_fork(boost::asio::io_service::fork_child);
+    }
+    {
+      LOGGER_LAYER;
+      LOGGER_DEBUG<<__LOGGER__<<"Application is about to start ..."<<std::endl;
+      app.doStart();
+      LOGGER_INFO<<__LOGGER__<<"IO service is about to start ..."<<std::endl;
+      ioService().run();// Uruchomienie aplikacji.
+      LOGGER_INFO<<__LOGGER__<<"Application is about to stop ..."<<std::endl;
+      app.doClean();
+      ioService().reset();//Zamykanie.
+      ioService().poll();
+      LOGGER_INFO<<__LOGGER__<<"IO service has stopped ..."<<std::endl;
+      app.doStop();
+      LOGGER_DEBUG<<__LOGGER__<<"Application has stopped ..."<<std::endl;
+    }
   } catch (std::exception& e) {
     std::cout<<"Exception: "<<e.what()<<std::endl<<std::endl;
     OPTIONS_HELP(std::cout);
