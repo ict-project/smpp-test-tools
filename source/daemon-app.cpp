@@ -75,6 +75,7 @@ void Connection::writePduEnd(seqence_t seqence){
       if (it->second<2) done=false;
     }
   }
+  if (done) shutdownRead();
 }
 #define SMPP_ID(tag,number,nameSpace,className,line) \
   void Connection::sendReq(nameSpace::className & p){ \

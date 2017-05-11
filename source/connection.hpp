@@ -69,6 +69,8 @@ public:
   virtual void asyncWrite()=0;
   //! Zamyka połącznie (funkcja obowiązkowo do nadpisania).
   virtual void doClose()=0;
+  virtual void shutdownRead()=0;
+  virtual void shutdownWrite()=0;
   //!
   //! @brief Wykonuje odczyt (funkcja obowiązkowo do nadpisania).
   //!  Powinna ustawić przy zakończeniu nowy asynchroniczny odczyt 
@@ -138,6 +140,8 @@ public:
   //! Zamyka połącznie.
   void doClose();
   void destroyThis();
+  void shutdownRead();
+  void shutdownWrite();
 };
 template<class Socket,class Stack>void Connection<Socket,Stack>::scheduleMinFlow() {
   auto self(Stack::shared_from_this());
@@ -243,6 +247,16 @@ template<class Socket,class Stack>void Connection<Socket,Stack>::doClose(){
 }
 template<class Socket,class Stack>void Connection<Socket,Stack>::destroyThis(){
   doClose();
+}
+template<class Socket,class Stack>void Connection<Socket,Stack>::shutdownRead() {
+  auto self(Stack::shared_from_this());
+  if (stopped) return;
+  s.shutdown(Socket::shutdown_receive);
+}
+template<class Socket,class Stack>void Connection<Socket,Stack>::shutdownWrite() {
+  auto self(Stack::shared_from_this());
+  if (stopped) return;
+  s.shutdown(Socket::shutdown_send);
 }
 //============================================
 typedef void (*factory_ip_t)(boost::asio::ip::tcp::socket & socket);
