@@ -54,17 +54,16 @@ private:
   bool done=false;
   void * linked=nullptr;
   sent_t sent;
-  bool writePduDec (void * src,type_t type,seqence_t seqence,bool outgoing);
-  void writePduEnd(seqence_t seqence);
-  #define SMPP_ID(tag,number,nameSpace,className,line) void sendReq(nameSpace::className & p);
+  bool writePduDec (type_t type,seqence_t seqence,bool outgoing,void * origin);
+  void writePduEnd(type_t type,seqence_t seqence,bool outgoing,void * origin);
+  #define SMPP_ID(tag,number,nameSpace,className,line) void sendReq(nameSpace::className & p,void * origin=nullptr);
     #include "smpp-connection.h.in"
   #undef SMPP_ID
 public:
   Connection();
   virtual ~Connection();
   template<class T> void readBegin(T & p){
-    sendReq(p);
-    if (linked) if (!(p.getCommandId()&0x80000000ul)) sent[p.getSequenceNumber()]=0;
+    sendReq(p,this);
   }
   template<class T> void readEnd(T & p){
     if (!done) asyncRead();
@@ -74,16 +73,16 @@ public:
   #undef SMPP_ID
   virtual void readPduUnknown(proto::pdu::Unknown & p);
   virtual void readPduError(anthill::smpp::SMPPPDU & p,const std::string & what);
-  template<class T> void writePduIn(T & p,void * src){
-    if (writePduDec(src,p.getCommandId(),p.getSequenceNumber(),false)) {
+  template<class T> void writePduIn(T & p,void * origin){
+    if (writePduDec(p.getCommandId(),p.getSequenceNumber(),false,origin)) {
       writePdu(p);
-      writePduEnd(p.getSequenceNumber());
+      writePduEnd(p.getCommandId(),p.getSequenceNumber(),false,origin);
     }
   }
-  template<class T> void writePduOut(T & p,void * src){
-    if (writePduDec(src,p.getCommandId(),p.getSequenceNumber(),true)) {
+  template<class T> void writePduOut(T & p,void * origin){
+    if (writePduDec(p.getCommandId(),p.getSequenceNumber(),true,origin)) {
       writePdu(p);
-      writePduEnd(p.getSequenceNumber());
+      writePduEnd(p.getCommandId(),p.getSequenceNumber(),true,origin);
     }
   }
   virtual void doStart();

@@ -152,8 +152,8 @@ template<class Socket,class Stack>void Connection<Socket,Stack>::scheduleMinFlow
       LOGGER_LAYER;
       if(!ec){
         if (stopped) return;
-        LOGGER_INFO<<__LOGGER__<<"Read flow "<<Stack::readMinFlow<<" bytes/minute on connection "<<Stack::socketDesc()<<std::endl;
-        LOGGER_INFO<<__LOGGER__<<"Write flow "<<Stack::writeMinFlow<<" bytes/minute on connection "<<Stack::socketDesc()<<std::endl;
+        LOGGER_INFO<<__LOGGER__<<"Read flow "<<readSizeMin<<" bytes/minute on connection "<<Stack::socketDesc()<<std::endl;
+        LOGGER_INFO<<__LOGGER__<<"Write flow "<<writeSizeMin<<" bytes/minute on connection "<<Stack::socketDesc()<<std::endl;
         if ((Stack::readMinFlow&&(readSizeMin<Stack::readMinFlow))||(Stack::writeMinFlow&&(writeSizeMin<Stack::writeMinFlow))){
           doClose();
           if (readSizeMin<Stack::readMinFlow) LOGGER_WARN<<__LOGGER__<<"Read flow to low ("<<readSizeMin<<"<"<<Stack::readMinFlow<<") on connection "<<Stack::socketDesc()<<std::endl;
@@ -225,7 +225,7 @@ template<class Socket,class Stack>void Connection<Socket,Stack>::asyncWrite(){
 template<class Socket,class Stack>Connection<Socket,Stack>::Connection(Socket & socket):s(std::move(socket)),d(smpp::main::ioService()){
   std::ostringstream out;
   LOGGER_INFO<<__LOGGER__<<"smpp::connection::Connection has been created ..."<<std::endl;
-  out<<"<local:"<<s.local_endpoint()<<", remote:"<<s.remote_endpoint()<<", ptr:"<<this<<">";
+  out<<"{local:"<<s.local_endpoint()<<", remote:"<<s.remote_endpoint()<<", ptr:"<<this<<"}";
   Stack::sDesc=out.str();
 }
 template<class Socket,class Stack> void Connection<Socket,Stack>::init() {
@@ -252,11 +252,13 @@ template<class Socket,class Stack>void Connection<Socket,Stack>::shutdownRead() 
   auto self(Stack::shared_from_this());
   if (stopped) return;
   s.shutdown(Socket::shutdown_receive);
+  LOGGER_DEBUG<<__LOGGER__<<"Connection "<<Stack::socketDesc()<<" use count: "<<self.use_count()<<std::endl;
 }
 template<class Socket,class Stack>void Connection<Socket,Stack>::shutdownWrite() {
   auto self(Stack::shared_from_this());
   if (stopped) return;
   s.shutdown(Socket::shutdown_send);
+  LOGGER_DEBUG<<__LOGGER__<<"Connection "<<Stack::socketDesc()<<" use count: "<<self.use_count()<<std::endl;
 }
 //============================================
 typedef void (*factory_ip_t)(boost::asio::ip::tcp::socket & socket);

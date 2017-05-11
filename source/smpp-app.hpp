@@ -84,12 +84,12 @@ private:
     if (seqence>0x7fffffff) seqence=0x1;
     return(seqence);
   }
-  void sendTextIn(const std::string & text,seqence_t s);
-  void sendTextOut(const std::string & text,seqence_t s);
-  #define SMPP_ID(tag,number,nameSpace,className,line) void sendPduIn(nameSpace::className & p);
+  void sendTextIn(const std::string & text,seqence_t s,void * origin=nullptr);
+  void sendTextOut(const std::string & text,seqence_t s,void * origin=nullptr);
+  #define SMPP_ID(tag,number,nameSpace,className,line) void sendPduIn(nameSpace::className & p,void * origin=nullptr);
     #include "smpp-connection.h.in"
   #undef SMPP_ID
-  #define SMPP_ID(tag,number,nameSpace,className,line) void sendPduOut(nameSpace::className & p);
+  #define SMPP_ID(tag,number,nameSpace,className,line) void sendPduOut(nameSpace::className & p,void * origin=nullptr);
     #include "smpp-connection.h.in"
   #undef SMPP_ID
 public:
@@ -111,7 +111,7 @@ public:
   template<class T> void readEnd(T & p){
     asyncRead();
   }
-  template<class T> void writeReq(T & req){
+  template<class T> void writeReq(T & req,void * origin=nullptr){
     req.setSequenceNumber(getSeqence());
     writePdu(req);
     {
@@ -122,9 +122,9 @@ public:
         what=e.what();
       }
       seqence_t s=req.getSequenceNumber();
-      sendTextOut("<<< Outgoing packet on "+socketDesc()+" <<<",s);
-      sendPduOut(req);
-      sendTextOut("<<< Validator: "+what+" <<<",s);
+      sendTextOut("<<< Outgoing packet on "+socketDesc()+" <<<",s,origin);
+      sendPduOut(req,origin);
+      sendTextOut("<<< Validator: "+what+" <<<",s,origin);
     }
   }
   template<class T> void writeResp(T & resp,seqence_t s){

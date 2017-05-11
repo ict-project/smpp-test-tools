@@ -49,39 +49,33 @@ Connection::Connection(){
 Connection::~Connection(){
   REGISTER_CLI_APP.del(this);
 }
-bool Connection::writePduDec (void * src,type_t type,seqence_t seqence,bool outgoing){
-  if (!ready) return(false);
-  if (linked){//Jeśl powiązany tylko z jednym połączeniem.
-    if (linked==src){//Jeśli to jest właśnie to połączenie.
-      if (outgoing){//Jeśli jest to PDU wychodzace.
-        if (!(type&0x80000000ul)) return(true);//Jeśli jest request.
-        if (type==0x0f000000ul) return(true);//Jeśli jest to text.
-      } else {//Jeśli jest to PDU wychodzace.
-        if (sent.count(seqence)){//Jeśli numer sekwencji się zgadza.
-          if (type&0x80000000ul) return(true);//Jeśli jest to response.
-          if (type==0x0f000000ul) return(true);//Jeśli jest to text.
-        }
-      }
-    }
-    return(false);
+bool Connection::writePduDec (type_t type,seqence_t seqence,bool outgoing,void * origin){
+  if (!ready) return(false);//Nie jest jeszcze gotowy, więc nic nie wysyła.
+  if (!linked) return(true);//Nie jest powiązany z niczym, więc wysyła wszystko.
+  if (!origin) return(true);//Pakiet rozgłaszany do wszystkich.
+  if (origin==this) {//Jeśli to własny pakiet.
+    if (!(type&0x80000000ul)) sent[seqence]=3;//Jeśli to jest reqest, to zapamiętaj, że wysłany.
+    return(true);
   }
-  return(true);
+  if ((linked==origin)&&(sent.count(seqence))) {//Jeśli numer sekwencji się zgadza.
+    sent[seqence]--;
+    if (sent.at(seqence)<1) sent.erase(seqence);
+    if (type&0x80000000ul) return(true);//Jeśli jest to response.
+    if (type==0x0f000000ul) return(true);//Jeśli jest to text.
+  }
+  return(false);
 }
-void Connection::writePduEnd(seqence_t seqence){
+void Connection::writePduEnd(type_t type,seqence_t seqence,bool outgoing,void * origin){
   if (linked){//Jeśl powiązany tylko z jednym połączeniem.
-    done=true;
-    if (sent.count(seqence)) sent[seqence]++;
-    for(sent_t::const_iterator it=sent.cbegin();it!=sent.cend();++it){
-      if (it->second<2) done=false;
-    }
+    done=sent.size()?false:true;
+    if (done) shutdownRead();
   }
-  if (done) shutdownRead();
 }
 #define SMPP_ID(tag,number,nameSpace,className,line) \
-  void Connection::sendReq(nameSpace::className & p){ \
+  void Connection::sendReq(nameSpace::className & p,void * origin){ \
     if (linked){ \
       smpp::app::Connection * c=REGISTER_SMPP_APP.get(linked); \
-      if (c) c->writeReq(p); \
+      if (c) c->writeReq(p,origin?origin:this); \
     } \
   }
   #include "smpp-connection.h.in"

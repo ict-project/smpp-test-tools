@@ -124,34 +124,34 @@ Connection::Connection()
 Connection::~Connection(){
   REGISTER_SMPP_APP.del(this);
 }
-void Connection::sendTextIn(const std::string & text,seqence_t s){
+void Connection::sendTextIn(const std::string & text,seqence_t s,void * origin){
   ::smpp::proto::pdu::Text p;
   p.text=text;
   p.setSequenceNumber(s);
   for (REG_IT_CLI_APP it=REGISTER_CLI_APP.begin();it!=REGISTER_CLI_APP.end();++it){
-    it->first->writePduIn(p,this);
+    it->first->writePduIn(p,origin?origin:this);
   }
 }
-void Connection::sendTextOut(const std::string & text,seqence_t s){
+void Connection::sendTextOut(const std::string & text,seqence_t s,void * origin){
   ::smpp::proto::pdu::Text p;
   p.text=text;
   p.setSequenceNumber(s);
   for (REG_IT_CLI_APP it=REGISTER_CLI_APP.begin();it!=REGISTER_CLI_APP.end();++it){
-    it->first->writePduOut(p,this);
+    it->first->writePduOut(p,origin?origin:this);
   }
 }
 #define SMPP_ID(tag,number,nameSpace,className,line) \
-  void Connection::sendPduIn(nameSpace::className & p){ \
+  void Connection::sendPduIn(nameSpace::className & p,void * origin){ \
     for (REG_IT_CLI_APP it=REGISTER_CLI_APP.begin();it!=REGISTER_CLI_APP.end();++it){ \
-      it->first->writePduIn(p,this); \
+      it->first->writePduIn(p,origin?origin:this); \
     } \
   }
   #include "smpp-connection.h.in"
 #undef SMPP_ID
 #define SMPP_ID(tag,number,nameSpace,className,line) \
-  void Connection::sendPduOut(nameSpace::className & p){ \
+  void Connection::sendPduOut(nameSpace::className & p,void * origin){ \
     for (REG_IT_CLI_APP it=REGISTER_CLI_APP.begin();it!=REGISTER_CLI_APP.end();++it){ \
-      it->first->writePduOut(p,this); \
+      it->first->writePduOut(p,origin?origin:this); \
     } \
   }
   #include "smpp-connection.h.in"
@@ -474,6 +474,7 @@ void Connection::doStart(){
     default:break;
   }
   asyncRead();
+  sendTextOut("+++ SMPP connection "+socketDesc()+" has started +++",0,nullptr);
 }
 void Connection::doStop(){
   switch (state){
@@ -483,6 +484,7 @@ void Connection::doStop(){
     } break;
     default:break;
   }
+  sendTextOut("+++ SMPP connection "+socketDesc()+" has stoped +++",0,nullptr);
 }
 //============================================
 void factory(boost::asio::ip::tcp::socket & socket){
