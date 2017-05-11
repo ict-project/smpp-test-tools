@@ -61,7 +61,7 @@ public:
 private:
   register_t r;
 public:
-  bool add(T* ptr,const std::string & desc){
+  bool add(T* ptr,const std::string & desc=""){
     if (r.count(ptr)) return(false);
     r[ptr]=desc;
     return(true);
@@ -69,6 +69,11 @@ public:
   bool del(T* ptr){
     if (!r.count(ptr)) return(false);
     r.erase(ptr);
+    return(true);
+  }
+  bool desc(T* ptr,const std::string & desc){
+    if (!r.count(ptr)) return(false);
+    r[ptr]=desc;
     return(true);
   }
   bool test(T* ptr){

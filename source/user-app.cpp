@@ -103,7 +103,7 @@ OPTIONS_CONFIG(smpp_params10,10){
 //===========================================
 Connection::Connection()
   :hexOutputter(std::cout),txtOutputter(std::cout){
-  REGISTER_CLI_APP.add(this,"User CLI connection "+socketDesc());
+  REGISTER_CLI_APP.add(this);
 }
 Connection::~Connection(){
   REGISTER_CLI_APP.del(this);
@@ -254,6 +254,7 @@ void Connection::readPduError(anthill::smpp::SMPPPDU & p,const std::string & wha
 }
 void Connection::doStart(){
   smpp::proto::pdu::Text p;
+  REGISTER_CLI_APP.desc(this,"User CLI connection "+socketDesc());
   p.text=params::tail?"tail":"send";
   if (params::list) p.text="list";
   writePdu(p);

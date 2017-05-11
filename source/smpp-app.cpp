@@ -119,7 +119,7 @@ std::string randomString(std::size_t len){
 //===========================================
 Connection::Connection()
   :type(params::bindType),state((params::bindType==Bind_SMSC)?Bind_SMSC_OPEN:Bind_ESME_OPEN){
-  REGISTER_SMPP_APP.add(this,"SMPP connection "+socketDesc());
+  REGISTER_SMPP_APP.add(this);
 }
 Connection::~Connection(){
   REGISTER_SMPP_APP.del(this);
@@ -436,6 +436,7 @@ void Connection::readPduError(anthill::smpp::SMPPPDU & p,const std::string & wha
   readEnd(p);
 }
 void Connection::doStart(){
+  REGISTER_SMPP_APP.desc(this,"SMPP connection "+socketDesc());
   if (state==Bind_ESME_OPEN) switch (type){
     case Bind_TX:{
       anthill::smpp::SMPPBindTransceiver req;

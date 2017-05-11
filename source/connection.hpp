@@ -146,6 +146,7 @@ public:
 template<class Socket,class Stack>void Connection<Socket,Stack>::scheduleMinFlow() {
   auto self(Stack::shared_from_this());
   if (stopped) return;
+  d.expires_from_now(boost::posix_time::seconds(60));
   d.async_wait(
     [this,self](const boost::system::error_code & ec){
       LOGGER_LAYER;
@@ -164,7 +165,6 @@ template<class Socket,class Stack>void Connection<Socket,Stack>::scheduleMinFlow
       }
     }
   );
-  d.expires_from_now(boost::posix_time::seconds(60));
   LOGGER_DEBUG<<__LOGGER__<<"Connection "<<Stack::socketDesc()<<" use count: "<<self.use_count()<<std::endl;
 }
 template<class Socket,class Stack>void Connection<Socket,Stack>::asyncRead(){
@@ -225,7 +225,7 @@ template<class Socket,class Stack>void Connection<Socket,Stack>::asyncWrite(){
 template<class Socket,class Stack>Connection<Socket,Stack>::Connection(Socket & socket):s(std::move(socket)),d(smpp::main::ioService()){
   std::ostringstream out;
   LOGGER_INFO<<__LOGGER__<<"smpp::connection::Connection has been created ..."<<std::endl;
-  out<<"[local:"<<s.local_endpoint()<<", remote:"<<s.remote_endpoint()<<", ptr:"<<this<<"]";
+  out<<"<local:"<<s.local_endpoint()<<", remote:"<<s.remote_endpoint()<<", ptr:"<<this<<">";
   Stack::sDesc=out.str();
 }
 template<class Socket,class Stack> void Connection<Socket,Stack>::init() {

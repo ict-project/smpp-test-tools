@@ -44,7 +44,7 @@ namespace params {
 }
 //===========================================
 Connection::Connection(){
-  REGISTER_CLI_APP.add(this,"Daemon CLI connection "+socketDesc());
+  REGISTER_CLI_APP.add(this);
 }
 Connection::~Connection(){
   REGISTER_CLI_APP.del(this);
@@ -247,6 +247,7 @@ void Connection::readPduError(anthill::smpp::SMPPPDU & p,const std::string & wha
   readEnd(p);
 }
 void Connection::doStart(){
+  REGISTER_CLI_APP.desc(this,"Daemon CLI connection "+socketDesc());
   asyncRead();
 }
 void Connection::doStop(){
