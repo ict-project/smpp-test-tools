@@ -65,6 +65,10 @@ protected:
   typedef std::enable_shared_from_this<Tcp> enable_shared_t;
   //! Wynik zapytania do DNS.
   boost::asio::ip::tcp::resolver::iterator ei;
+  //! Czy ma być użyty adres <any>
+  bool any=false;
+  //! Jeśli any
+  boost::asio::ip::tcp::endpoint ep;
   //! Funkcja wykonywana, gdy zapytanie DNS zakończy się sukcesem (funkcja obowiązkowo do nadpisania).
   virtual void afterResolve()=0;
   //! Zewnętrzna obsługa błędów.

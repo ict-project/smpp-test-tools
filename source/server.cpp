@@ -66,38 +66,53 @@ void Tcp::doStop(){
 }
 void Tcp::afterResolve(){
   auto self(enable_shared_t::shared_from_this());
-  doBind();
+  if (any){
+    doBind(ep);
+  } else {
+    doBind();
+  }
 }
-void Tcp::doBind(){
-  auto self(enable_shared_t::shared_from_this());
-  if (stopped) return;
-  if (ei!=boost::asio::ip::tcp::resolver::iterator()){
-    LOGGER_DEBUG<<__LOGGER__<<"Trying to bind "<<ei->endpoint()<<" ..."<<std::endl;
+bool Tcp::doBind(const boost::asio::ip::tcp::endpoint & ep){
+  if (stopped) return(false);
+  {
+    LOGGER_DEBUG<<__LOGGER__<<"Trying to bind "<<ep<<" ..."<<std::endl;
     {
       boost::system::error_code ec;
-      a.open(ei->endpoint().protocol(),ec);
+      a.open(ep.protocol(),ec);
       if (ec) {
-        LOGGER_INFO<<__LOGGER__<<"Bind to "<<ei->endpoint()<<" has failed ..."<<std::endl;
-        ++ei;
+        LOGGER_INFO<<__LOGGER__<<"Bind to "<<ep<<" has failed ..."<<std::endl;
         doBind();
+        return(false);
       } else {
-        a.bind(ei->endpoint(),ec);
+        a.bind(ep,ec);
         if (ec) {
-          LOGGER_INFO<<__LOGGER__<<"Bind to "<<ei->endpoint()<<" has failed ..."<<std::endl;
-          ++ei;
+          LOGGER_INFO<<__LOGGER__<<"Bind to "<<ep<<" has failed ..."<<std::endl;
           doBind();
+          return(false);
         } else {
           a.listen(boost::asio::socket_base::max_connections,ec);
           if (ec) {
-            LOGGER_INFO<<__LOGGER__<<"Bind to "<<ei->endpoint()<<" has failed ..."<<std::endl;
-            ++ei;
+            LOGGER_INFO<<__LOGGER__<<"Bind to "<<ep<<" has failed ..."<<std::endl;
             doBind();
+            return(false);
           } else {
-            LOGGER_DEBUG<<__LOGGER__<<"Bind to "<<ei->endpoint()<<" has succeeded ..."<<std::endl;
+            LOGGER_DEBUG<<__LOGGER__<<"Bind to "<<ep<<" has succeeded ..."<<std::endl;
             doAccept();
           }
         }
       }
+    }
+  }
+  return(true);
+}
+bool Tcp::doBind(){
+  auto self(enable_shared_t::shared_from_this());
+  if (stopped) return(false);
+  if (ei!=boost::asio::ip::tcp::resolver::iterator()){
+    if (doBind(ei->endpoint())){
+      return(true);
+    } else {
+      ++ei;
     }
   } else {
     boost::system::error_code ec;
@@ -105,6 +120,7 @@ void Tcp::doBind(){
     doStop();
     if (e) e(ec);
   }
+  return(false);
 }
 void Tcp::doAccept(){
   auto self(enable_shared_t::shared_from_this());

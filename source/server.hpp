@@ -65,7 +65,8 @@ private:
   //! Funkcja wykonywana, gdy zapytanie DNS zakończy się sukcesem.
   void afterResolve();
   //! Przypisuje gniazdo.
-  void doBind();
+  bool doBind(const boost::asio::ip::tcp::endpoint & ep);
+  bool doBind();
   //! Rozpoczyna akceptację połączeń.
   void doAccept();
 };

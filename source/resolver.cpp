@@ -57,6 +57,18 @@ Tcp::~Tcp(){
 void Tcp::doResolve(){
   auto self(enable_shared_t::shared_from_this());
   LOGGER_DEBUG<<__LOGGER__<<"Trying to resolve "<<q.host_name()<<":"<<q.service_name()<<" ..."<<std::endl;
+  if ((q.host_name()=="")||(q.host_name()=="0.0.0.0")||(q.host_name()=="[::]")){
+    any=true;
+    try{
+      boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v6(),std::stol(q.service_name()));
+      ep=endpoint;
+      LOGGER_DEBUG<<__LOGGER__<<"Resolving "<<"<any>"<<":"<<q.service_name()<<" has succeeded ..."<<std::endl;
+      afterResolve();
+    }catch(...){
+      LOGGER_INFO<<__LOGGER__<<"Resolving "<<"<any>"<<":"<<q.service_name()<<" has failed ..."<<std::endl;
+    }
+    return;
+  }
   d.expires_from_now(boost::posix_time::seconds(60));
   d.async_wait(
     [this,self](const boost::system::error_code& ec){
@@ -77,9 +89,9 @@ void Tcp::doResolve(){
       if (ec){
         if (e) e(ec);
       } else {
-        LOGGER_DEBUG<<__LOGGER__<<"Resolving "<<q.host_name()<<":"<<q.service_name()<<" has succeeded ..."<<std::endl;
         d.cancel();
         ei=endpoint_iterator;
+        LOGGER_DEBUG<<__LOGGER__<<"Resolving "<<q.host_name()<<":"<<q.service_name()<<" has succeeded ..."<<std::endl;
         afterResolve();
       }
     }
