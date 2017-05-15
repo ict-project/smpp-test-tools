@@ -66,9 +66,8 @@ bool Connection::writePduDec (type_t type,seqence_t seqence,bool outgoing,void *
   return(false);
 }
 void Connection::writePduEnd(type_t type,seqence_t seqence,bool outgoing,void * origin){
-  if (linked){//Jeśl powiązany tylko z jednym połączeniem.
+  if ((linked)&&(textPdu>1)){//Jeśl powiązany tylko z jednym połączeniem i CLI zakończyło wysyłanie danych.
     done=sent.size()?false:true;
-    if (done) shutdownRead();
   }
 }
 #define SMPP_ID(tag,number,nameSpace,className,line) \
@@ -233,6 +232,7 @@ void Connection::readPdu(::smpp::proto::pdu::Text & p){
     ready=true;
     readEnd(p);
   }
+  textPdu++;
 }
 void Connection::readPduUnknown(proto::pdu::Unknown & p){
   readEnd(p);

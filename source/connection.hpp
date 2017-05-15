@@ -189,9 +189,9 @@ template<class Socket,class Stack>void Connection<Socket,Stack>::asyncRead(){
         } else {
           Stack::readSize=length;
           readSizeMin+=length;
-            LOGGER_DEBUG<<__LOGGER__;
-            smpp::main::memoryDump(LOGGER_DEBUG,Stack::readData,length);
-            LOGGER_DEBUG<<std::endl;
+            //LOGGER_DEBUG<<__LOGGER__;
+            //smpp::main::memoryDump(LOGGER_DEBUG,Stack::readData,length);
+            //LOGGER_DEBUG<<std::endl;
           Stack::doRead();
           LOGGER_DEBUG<<__LOGGER__<<"Connection "<<Stack::socketDesc()<<" read("<<ec<<") count: "<<length<<std::endl;
         }
@@ -218,9 +218,9 @@ template<class Socket,class Stack>void Connection<Socket,Stack>::asyncWrite(){
           Stack::readError(ec);
           doClose();
         } else {
-            LOGGER_DEBUG<<__LOGGER__;
-            smpp::main::memoryDump(LOGGER_DEBUG,Stack::writeData,length);
-            LOGGER_DEBUG<<std::endl;
+            //LOGGER_DEBUG<<__LOGGER__;
+            //smpp::main::memoryDump(LOGGER_DEBUG,Stack::writeData,length);
+            //LOGGER_DEBUG<<std::endl;
           Stack::writeSize=0;
           writeSizeMin+=length;
           Stack::doWrite();

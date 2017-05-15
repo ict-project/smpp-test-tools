@@ -51,6 +51,8 @@ private:
   typedef uint32_t type_t;
   typedef std::map<seqence_t,int> sent_t;
   bool ready=false;
+  //! Informuje, ile razy CLI wysłało PDU TEXT.
+  std::size_t textPdu=0;
   void * linked=nullptr;
   sent_t sent;
   bool writePduDec (type_t type,seqence_t seqence,bool outgoing,void * origin);

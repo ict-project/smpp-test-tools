@@ -270,6 +270,7 @@ void Connection::doStart(){
       case 25: sendSMPPAlertNotification();break;
     }
   }
+  writePdu(p);
   asyncRead();
 }
 void Connection::doStop(){
