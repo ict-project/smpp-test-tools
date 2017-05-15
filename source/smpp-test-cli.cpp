@@ -59,7 +59,7 @@ OPTIONS_CONFIG(cli0,0){
   if (config) {
     parser.registerOpt(L'c',L"ctr-id",params::path);
   } else {
-    parser.errors<<" "<<parser.getOptionDesc(L'c')<<" - Instance ID (smpp-test-server or smpp-test-client) that smpp-test-cli should connect to. In order to get ID list use smpp-test-list."<<std::endl;
+    parser.errors<<" "<<parser.getOptionDesc(L'c')<<" - Instance ID (smpp-test-server or smpp-test-client) that smpp-test-cli should connect to. In order to get ID list use 'ls /tmp/*' ."<<std::endl;
   }
 }
 //====================================================================
