@@ -45,6 +45,7 @@ namespace params {
 //===========================================
 Connection::Connection(){
   REGISTER_CLI_APP.add(this);
+  writeMinFlow=1;
 }
 Connection::~Connection(){
   REGISTER_CLI_APP.del(this);
@@ -213,24 +214,27 @@ void Connection::readPdu(anthill::smpp::SMPPAlertNotification & p){
 }
 void Connection::readPdu(::smpp::proto::pdu::Text & p){
   LOGGER_DEBUG<<__LOGGER__<<"::smpp::proto::pdu::Text.text="<<p.text<<std::endl;
-  if (p.text=="list") {
-    smpp::proto::pdu::Text text;
-    text.text="+++ Connection list +++";
-    writePdu(text);
-    for (REG_IT_SMPP_APP it=REGISTER_SMPP_APP.begin();it!=REGISTER_SMPP_APP.end();++it){
-      text.text=it->second;
+  if (!textPdu){
+    if (p.text=="list") {
+      smpp::proto::pdu::Text text;
+      text.text="+++ Connection list +++";
       writePdu(text);
+      for (REG_IT_SMPP_APP it=REGISTER_SMPP_APP.begin();it!=REGISTER_SMPP_APP.end();++it){
+        text.text=it->second;
+        writePdu(text);
+      }
+      text.text="+++ +++";
+      writePdu(text);
+      done=true;
+    } else if (p.text=="send") {
+      linked=REGISTER_SMPP_APP.rand();
+      LOGGER_DEBUG<<__LOGGER__<<"linked="<<linked<<std::endl;
+      ready=true;
+      readEnd(p);
+    } else {
+      ready=true;
+      readEnd(p);
     }
-    text.text="+++ +++";
-    writePdu(text);
-  } else if (p.text=="send") {
-    linked=REGISTER_SMPP_APP.rand();
-    LOGGER_DEBUG<<__LOGGER__<<"linked="<<linked<<std::endl;
-    ready=true;
-    readEnd(p);
-  } else {
-    ready=true;
-    readEnd(p);
   }
   textPdu++;
 }
