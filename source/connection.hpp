@@ -185,6 +185,7 @@ template<class Socket,class Stack>void Connection<Socket,Stack>::asyncRead(){
       try {
         if (ec) {
           Stack::readError(ec);
+          doClose();
         } else {
           Stack::readSize=length;
           readSizeMin+=length;
@@ -215,6 +216,7 @@ template<class Socket,class Stack>void Connection<Socket,Stack>::asyncWrite(){
       try {
         if (ec){
           Stack::readError(ec);
+          doClose();
         } else {
             LOGGER_DEBUG<<__LOGGER__;
             smpp::main::memoryDump(LOGGER_DEBUG,Stack::writeData,length);
