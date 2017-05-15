@@ -142,6 +142,7 @@ void Connection::doRead(){
           } catch (std::exception& e) { \
             readPduError(p,e.what()); \
             LOGGER_WARN<<__LOGGER__<<"Decoder error: "<<e.what()<<std::endl; \
+            doClose(); \
           } \
         } break;
         #include "smpp-connection.h.in"
@@ -155,13 +156,14 @@ void Connection::doRead(){
         } catch (std::exception& e) {
           readPduError(p,e.what());
           LOGGER_WARN<<__LOGGER__<<"Decoder error: "<<e.what()<<std::endl;
+          doClose();
         }
       } break;
     }
     decoder.erasePdu();//Dane obsłuzonego pakietu są kasowane w buforze dekodera.
   } 
   if (again){//Jeśli PDU nie jest jeszcze cały.
-    asyncRead();
+    if (!done) asyncRead();
   }
 }
 void Connection::doWrite(){
@@ -172,6 +174,7 @@ void Connection::doWrite(){
   if (encoder.getBufferSize()||writeSize){//Jeśli coś jeszcze do wysłania.
     asyncWrite();
   } else {
+    if (done) doClose();
   }
 }
 #define SMPP_ID(tag,number,nameSpace,className,line) \

@@ -116,6 +116,10 @@ template<class Socket,class Stack>class Connection : public Stack{
 private:
   //! Informuje, czy połączenie jest zamknięte.
   bool stopped=false;
+  //! Informuje, czy odczyt został ustawiony i czeka.
+  bool readWaiting=false;
+  //! Informuje, czy zapis został ustawiony i czeka.
+  bool writeWaiting=false;
   //! Timer do obliczania liczby bajtów na minutę.
   boost::asio::deadline_timer d;
   //! Rozmiar odczytanych danych w ostatniej minucie.
@@ -170,12 +174,14 @@ template<class Socket,class Stack>void Connection<Socket,Stack>::scheduleMinFlow
 template<class Socket,class Stack>void Connection<Socket,Stack>::asyncRead(){
   auto self(Stack::shared_from_this());
   if (stopped) return;
+  if (readWaiting) return;
   //boost::asio::async_read(
     //s,
   s.async_read_some(
     boost::asio::buffer(Stack::readData,Stack::bufferSize),
     [this,self](const boost::system::error_code & ec, std::size_t length){
       LOGGER_LAYER;
+      readWaiting=false;
       try {
         if (ec) {
           Stack::readError(ec);
@@ -193,16 +199,19 @@ template<class Socket,class Stack>void Connection<Socket,Stack>::asyncRead(){
       }
     }
   );
+  readWaiting=true;
   LOGGER_DEBUG<<__LOGGER__<<"Connection "<<Stack::socketDesc()<<" use count: "<<self.use_count()<<std::endl;
 }
 template<class Socket,class Stack>void Connection<Socket,Stack>::asyncWrite(){
   auto self(Stack::shared_from_this());
   if (stopped) return;
+  if (writeWaiting) return;
   boost::asio::async_write(
     s,
-    boost::asio::buffer(Stack::writeData,Stack::writeSize),
+    boost::asio::buffer(Stack::writeData,Stack::bufferSize>Stack::writeSize?Stack::writeSize:Stack::bufferSize),
     [this,self](const boost::system::error_code & ec, std::size_t length){
       LOGGER_LAYER;
+      writeWaiting=false;
       try {
         if (ec){
           Stack::readError(ec);
@@ -220,6 +229,7 @@ template<class Socket,class Stack>void Connection<Socket,Stack>::asyncWrite(){
       }
     }
   );
+  writeWaiting=true;
   LOGGER_DEBUG<<__LOGGER__<<"Connection "<<Stack::socketDesc()<<" use count: "<<self.use_count()<<std::endl;
 }
 template<class Socket,class Stack>Connection<Socket,Stack>::Connection(Socket & socket):s(std::move(socket)),d(smpp::main::ioService()){

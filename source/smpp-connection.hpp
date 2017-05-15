@@ -156,11 +156,13 @@ template<class T> uint32_t Coder<T>::getPduSize(){
 }
 template<class T> void Coder<T>::erasePdu(){
   uint32_t pduSize=getPduSize();
-  T::m_aBuffer.erase(T::m_aBuffer.begin(),T::m_aBuffer.begin()+pduSize);
-  if (T::m_nOffset>pduSize){
-    T::m_nOffset-=pduSize;
-  } else {
-    T::m_nOffset=0;
+  if (pduSize){
+    T::m_aBuffer.erase(T::m_aBuffer.begin(),T::m_aBuffer.begin()+pduSize);
+    if (T::m_nOffset>pduSize){
+      T::m_nOffset-=pduSize;
+    } else {
+      T::m_nOffset=0;
+    }
   }
 }
 //===========================================
@@ -180,6 +182,8 @@ private:
   Decoder decoder;
   Encoder encoder;
 protected:
+  //! Czy koniec połączenia.
+  bool done=false;
   //!
   //! @brief Wykonuje odczyt.
   //!
