@@ -241,7 +241,7 @@ void memoryDump(std::ostream & out,void * ptr,std::size_t size){
   for (std::size_t k=0;k<size;k++){
     uint8_t * p=(uint8_t *)ptr+k;
     out<<map[((*p)>>4)];
-    out<<map[((*p)&&0xF)];
+    out<<map[((*p)&0xF)];
     out<<' ';
   }
   out<<'|';

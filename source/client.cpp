@@ -44,12 +44,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace smpp { namespace client {
 //============================================
 Tcp::Tcp(const std::string & host,const std::string & port,smpp::connection::factory_ip_t factory)
-  :resolver::Tcp(host,port),s(smpp::main::ioService()),d(smpp::main::ioService()),f(factory){
+  :resolver::Tcp(host,port),s(smpp::main::ioService()),f(factory),d(smpp::main::ioService()){
   LOGGER_INFO<<__LOGGER__<<"smpp::client::Tcp has been created ..."<<std::endl;
   REGISTER_CLIENT_TCP.add(this,"smpp::client::Tcp "+host+":"+port);
 }
 Tcp::Tcp(const std::string & host,const std::string & port,smpp::connection::factory_ip_t factory,resolver::error_handler_t onError)
-  :resolver::Tcp(host,port,onError),s(smpp::main::ioService()),d(smpp::main::ioService()),f(factory){
+  :resolver::Tcp(host,port,onError),s(smpp::main::ioService()),f(factory),d(smpp::main::ioService()){
   LOGGER_INFO<<__LOGGER__<<"smpp::client::Tcp has been created ..."<<std::endl;
   REGISTER_CLIENT_TCP.add(this,"smpp::client::Tcp "+host+":"+port);
 }

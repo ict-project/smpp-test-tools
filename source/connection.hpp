@@ -234,7 +234,7 @@ template<class Socket,class Stack>void Connection<Socket,Stack>::asyncWrite(){
   writeWaiting=true;
   LOGGER_DEBUG<<__LOGGER__<<"Connection "<<Stack::socketDesc()<<" use count: "<<self.use_count()<<std::endl;
 }
-template<class Socket,class Stack>Connection<Socket,Stack>::Connection(Socket & socket):s(std::move(socket)),d(smpp::main::ioService()){
+template<class Socket,class Stack>Connection<Socket,Stack>::Connection(Socket & socket):d(smpp::main::ioService()),s(std::move(socket)){
   std::ostringstream out;
   LOGGER_INFO<<__LOGGER__<<"smpp::connection::Connection has been created ..."<<std::endl;
   out<<"{local:"<<s.local_endpoint()<<", remote:"<<s.remote_endpoint()<<", ptr:"<<this<<"}";

@@ -2,6 +2,7 @@ dist: trusty
 sudo: required
 os:
   - linux
+  - osx
 language:
   - cpp
 compiler:
@@ -16,9 +17,10 @@ addons:
       - cmake
       - rpm
       - libboost-all-dev
+before_install:
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; fi
 install:
-    - if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
-    - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.7" CC="clang-3.7"; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
 before_script:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ./build.linux.bsh; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ];   then ./build.xcode.bsh; fi
