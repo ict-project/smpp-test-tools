@@ -40,6 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "smpp-app.hpp"
 #include "../libict/source/logger.hpp"
 #include "../libict/source/options.hpp"
+#include "git_version.h"
 //============================================
 namespace params {
   namespace init {
@@ -75,6 +76,12 @@ OPTIONS_CONFIG(server0,0){
     parser.registerOpt(L'p',L"port",params::port);
   } else {
     parser.errors<<" "<<parser.getOptionDesc(L'h')<<" - Port that SMPP server should bind to (default: "<<params::init::port<<")."<<std::endl;
+  }
+}
+OPTIONS_CONFIG(server1000,1000){
+  if (config) {
+  } else {
+    parser.errors<<std::endl<<"Version: "<<GIT_VERSION<<std::endl;
   }
 }
 //============================================
