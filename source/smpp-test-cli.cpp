@@ -39,6 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "user-app.hpp"
 #include "../libict/source/logger.hpp"
 #include "../libict/source/options.hpp"
+#include "git_version.h"
 //====================================================================
 namespace params {
   namespace init {
@@ -51,7 +52,9 @@ OPTIONS_CONFIG(cli0,0){
   if (config) {
   } else {
     parser.errors<<"Usage: "<<std::endl;
-    parser.errors<<" smpp-test-cli --ctr-id=smpp-test-client-0"<<std::endl;
+    parser.errors<<" smpp-test-cli --ctr-id=smpp-test-client-0 --id=SUBMIT_SM"<<std::endl;
+    parser.errors<<" smpp-test-cli --ctr-id=smpp-test-client-0 --list"<<std::endl;
+    parser.errors<<" smpp-test-cli --ctr-id=smpp-test-client-0 --tail"<<std::endl;
     parser.errors<<" smpp-test-cli -h"<<std::endl;
     parser.errors<<std::endl;
     parser.errors<<"Options: "<<std::endl;
@@ -60,6 +63,12 @@ OPTIONS_CONFIG(cli0,0){
     parser.registerOpt(L'c',L"ctr-id",params::path);
   } else {
     parser.errors<<" "<<parser.getOptionDesc(L'c')<<" - Instance ID (smpp-test-server or smpp-test-client) that smpp-test-cli should connect to. In order to get ID list use 'ls /tmp/*' ."<<std::endl;
+  }
+}
+OPTIONS_CONFIG(cli1000,1000){
+  if (config) {
+  } else {
+    parser.errors<<std::endl<<"Version: "<<GIT_VERSION<<std::endl;
   }
 }
 //====================================================================

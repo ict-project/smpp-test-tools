@@ -42,6 +42,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../libict/source/logger.hpp"
 #include "../libict/source/options.hpp"
 #include <map>
+#include "git_version.h"
 //============================================
 namespace params {
   namespace init {
@@ -66,6 +67,7 @@ OPTIONS_CONFIG(client0,0){
   } else {
     parser.errors<<"Usage: "<<std::endl;
     parser.errors<<" smpp-test-client --ctr-id=smpp-test-client-0"<<std::endl;
+    parser.errors<<" smpp-test-client --ctr-id=smpp-test-client-0 --bind=TRX"<<std::endl;
     parser.errors<<" smpp-test-client -h"<<std::endl;
     parser.errors<<std::endl;
     parser.errors<<"Options: "<<std::endl;
@@ -90,6 +92,12 @@ OPTIONS_CONFIG(client0,0){
   } else {
     parser.errors<<" "<<parser.getOptionDesc(L'b')<<" - Bind type (default: 'SMSC')."<<std::endl;
     parser.errors<<" "<<" Bind type values: 'SMSC' (no bind),'TX','RX','TRX'."<<std::endl;
+  }
+}
+OPTIONS_CONFIG(client1000,1000){
+  if (config) {
+  } else {
+    parser.errors<<std::endl<<"Version: "<<GIT_VERSION<<std::endl;
   }
 }
 //============================================
