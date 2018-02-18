@@ -5,49 +5,34 @@ project(smpp-test-tools)
 
 set(CMAKE_CXX_STANDARD 11)
 
+set(CMAKE_ICT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../libict/)
+set(CMAKE_ICT_SOURCE ${CMAKE_ICT_DIR}/source/)
+set(CMAKE_ICT_BIN ${CMAKE_ICT_DIR}/build/)
+add_subdirectory(${CMAKE_ICT_SOURCE} ${CMAKE_ICT_BIN})
+
+set(CMAKE_SMPP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../libsmpp/)
+set(CMAKE_SMPP_SOURCE ${CMAKE_SMPP_DIR}/source/)
+set(CMAKE_SMPP_BIN ${CMAKE_SMPP_DIR}/build/)
+add_subdirectory(${CMAKE_SMPP_SOURCE} ${CMAKE_SMPP_BIN})
+
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.45.0 COMPONENTS system)
 include_directories(${Boost_INCLUDE_DIRS})
 
-set(CMAKE_SOURCE_FILES_SMPP 
- ../libsmpp/source/AntHill.cpp                ../libsmpp/source/SMPPBindTransceiverResp.cpp    ../libsmpp/source/SMPPDeliverSMResp.cpp         ../libsmpp/source/SMPPResp.cpp
- ../libsmpp/source/AntHillSMPP.cpp            ../libsmpp/source/SMPPBindTransmitter.cpp        ../libsmpp/source/SMPPEncoder.cpp               ../libsmpp/source/SMPPStructures.cpp
- ../libsmpp/source/BinaryDecoder.cpp          ../libsmpp/source/SMPPBindTransmitterResp.cpp    ../libsmpp/source/SMPPEnquireLink.cpp           ../libsmpp/source/SMPPSubmitMulti.cpp
- ../libsmpp/source/BinaryEncoder.cpp          ../libsmpp/source/SMPPBroadcastSM.cpp            ../libsmpp/source/SMPPEnquireLinkResp.cpp       ../libsmpp/source/SMPPSubmitMultiResp.cpp
- ../libsmpp/source/BinaryOutputter.cpp        ../libsmpp/source/SMPPBroadcastSMResp.cpp        ../libsmpp/source/SMPPGenericNack.cpp           ../libsmpp/source/SMPPSubmitSM.cpp
- ../libsmpp/source/ByteBuffer.cpp             ../libsmpp/source/SMPPCancelBroadcastSM.cpp      ../libsmpp/source/SMPPHexOutputter.cpp          ../libsmpp/source/SMPPSubmitSMResp.cpp
- ../libsmpp/source/DecoderBase.cpp            ../libsmpp/source/SMPPCancelBroadcastSMResp.cpp  ../libsmpp/source/SMPPOutbind.cpp               ../libsmpp/source/SMPPTxtOutputter.cpp
- ../libsmpp/source/EncoderBase.cpp            ../libsmpp/source/SMPPCancelSM.cpp               ../libsmpp/source/SMPPOutputterBase.cpp         ../libsmpp/source/SMPPUnbind.cpp
- ../libsmpp/source/OutputterBase.cpp          ../libsmpp/source/SMPPCancelSMResp.cpp           ../libsmpp/source/SMPPPDU.cpp                   ../libsmpp/source/SMPPUnbindResp.cpp
- ../libsmpp/source/SMPPAlertNotification.cpp  ../libsmpp/source/SMPPCSVOutputter.cpp           ../libsmpp/source/SMPPQueryBroadcastSM.cpp      ../libsmpp/source/SMPPValidator.cpp
- ../libsmpp/source/SMPPBind.cpp               ../libsmpp/source/SMPPDataSM.cpp                 ../libsmpp/source/SMPPQueryBroadcastSMResp.cpp  ../libsmpp/source/SMPPXMLOutputter.cpp
- ../libsmpp/source/SMPPBindReceiver.cpp       ../libsmpp/source/SMPPDataSMResp.cpp             ../libsmpp/source/SMPPQuerySM.cpp               ../libsmpp/source/TextOutputter.cpp
- ../libsmpp/source/SMPPBindReceiverResp.cpp   ../libsmpp/source/SMPPDatatypes.cpp              ../libsmpp/source/SMPPQuerySMResp.cpp           ../libsmpp/source/ValidatorBase.cpp
- ../libsmpp/source/SMPPBindResp.cpp           ../libsmpp/source/SMPPDecoder.cpp                ../libsmpp/source/SMPPReplaceSM.cpp             ../libsmpp/source/XMLOutputter.cpp
- ../libsmpp/source/SMPPBindTransceiver.cpp    ../libsmpp/source/SMPPDeliverSM.cpp              ../libsmpp/source/SMPPReplaceSMResp.cpp
-)
-
-set(CMAKE_SOURCE_FILES_ICT
- ../libict/source/base64.cpp  ../libict/source/logger.cpp  ../libict/source/options.cpp  ../libict/source/time.cpp  ../libict/source/utf8.cpp ../libict/source/os.cpp
-)
-
 set(CMAKE_SOURCE_FILES_TOOL
  connection.cpp smpp-connection.cpp resolver.cpp client.cpp server.cpp main-function.cpp
 )
 
-add_library(smpp STATIC ${CMAKE_SOURCE_FILES_SMPP})
-add_library(ict  STATIC ${CMAKE_SOURCE_FILES_ICT})
-
 add_executable(smpp-test-server ${CMAKE_SOURCE_FILES_TOOL} smpp-app.cpp daemon-app.cpp smpp-test-server.cpp)
-target_link_libraries(smpp-test-server pthread smpp ict ${Boost_LIBRARIES})
+target_link_libraries(smpp-test-server pthread smpp-static ict-static ${Boost_LIBRARIES})
 
 add_executable(smpp-test-client ${CMAKE_SOURCE_FILES_TOOL} smpp-app.cpp daemon-app.cpp smpp-test-client.cpp)
-target_link_libraries(smpp-test-client pthread smpp ict ${Boost_LIBRARIES})
+target_link_libraries(smpp-test-client pthread smpp-static ict-static ${Boost_LIBRARIES})
 
 add_executable(smpp-test-cli ${CMAKE_SOURCE_FILES_TOOL} user-app.cpp smpp-test-cli.cpp)
-target_link_libraries(smpp-test-cli pthread smpp ict ${Boost_LIBRARIES})
+target_link_libraries(smpp-test-cli pthread smpp-static ict-static ${Boost_LIBRARIES})
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../.git)
   find_package(Git)
